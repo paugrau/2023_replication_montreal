@@ -33,3 +33,5 @@ For an additional visualization of the sampling strategy, an additional 1 files 
 
 
 The repository further includes several compiled files providing an overview of the code and output and PDF and HTML format that can be produced using the main.Rmd script. Also, the folders figures and tables include presented results that are automatically re-produced with the main.Rmd.
+
+DEMO CHANGE
