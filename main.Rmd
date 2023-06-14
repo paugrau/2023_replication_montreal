@@ -32,7 +32,7 @@ source('code/functions.R')
 
 ## Install packages if not installed
 p_needed <-
-  c(
+  c("cowplot",
     "haven",
     "dplyr",
     "data.table",
