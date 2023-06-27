@@ -3,7 +3,7 @@ library(rdrobust)
 library(patchwork)
 # 0. Import data
 
-source2('code/data.R', 63,288) # this does the data prep for us. 
+realtest::source2('code/data.R') # this does the data prep for us. 
 
 # 1. Clean data
 
@@ -36,3 +36,17 @@ rdrobust::rdplot(x=df$days_, y=df$polint)
 rdrobust::rdplot(x=df$days_, y=df$ext_eff)
 rdrobust::rdplot(x=df$days_, y=df$int_eff)
 rdrobust::rdplot(x=df$days_, y=df$demsat)
+
+# RD:
+polint    <-   rdrobust::rdplot(x=df$days_, y=df$polint)$rdplot+labs(title = "polint")
+ext_eff   <-   rdrobust::rdplot(x=df$days_, y=df$ext_eff)$rdplot+labs(title = "ext_eff")
+int_eff   <-   rdrobust::rdplot(x=df$days_, y=df$int_eff)$rdplot+labs(title = "int_eff")
+demsat    <-   rdrobust::rdplot(x=df$days_, y=df$demsat)$rdplot+labs(title = "demsat")
+
+patchwork::wrap_plots(
+  polint,
+  ext_eff,
+  int_eff,
+  demsat)
+
+df%>%filter(days_<100&days>-100)%>%ggplot(aes(x=days_, fill=factor(treatment)))+geom_histogram(bins=500)
