@@ -1,9 +1,18 @@
-library(ggplot2)
+library(tidyverse)
+#library(ggplot2)
 library(ggdist)
+library(haven)
+library(WeightIt)
+library(MatchIt)
+library(cobalt)
+library(broom)
+library(dotwhisker)
 
 source('code/functions.R')
 source2('code/data.R', 63,288) # this does the data prep for us. 
 rm(list=setdiff(ls(), c("g12w12", "g12w23", "g12w13")))
+
+
 
 ## Fixed Presets ---------------------------------------------------------------
 
@@ -17,31 +26,41 @@ subgroups <- c('all', 'v', 'nv')
 ## Difference-in-Differeneces --------------------------------------------------
 
 # Create datasets with Matching
-library(WeightIt)
 covs <- formula(treatment ~ female + education + kreisfrei)
 
+# Delete rows with NAs
+
+g12w12_na <- drop_na(g12w12, treatment, female, education, kreisfrei)
+g12w23_na <- drop_na(g12w23, treatment, female, education, kreisfrei)
+g12w13_na <- drop_na(g12w13, treatment, female, education, kreisfrei)
+
 ## CEM
-g12w12_cem_ <- matchit(covs, data = g12w12%>%na.omit(), method = "cem")
-g12w23_cem_ <- matchit(covs, data = g12w23%>%na.omit(), method = "cem")
-g12w13_cem_ <- matchit(covs, data = g12w13%>%na.omit(), method = "cem")
+g12w12_cem_ <- matchit(covs, data = g12w12_na, method = "cem")
+g12w23_cem_ <- matchit(covs, data = g12w23_na, method = "cem")
+g12w13_cem_ <- matchit(covs, data = g12w13_na, method = "cem")
 
 g12w12_cem <- match.data(g12w12_cem_)%>%mutate(weights=as.numeric(weights))
 g12w23_cem <- match.data(g12w23_cem_)%>%mutate(weights=as.numeric(weights))
 g12w13_cem <- match.data(g12w13_cem_)%>%mutate(weights=as.numeric(weights))
 
 ## EB
-g12w12_eb <- na.omit(g12w12)
-g12w12_eb$weights <- weightit(covs, data = g12w12_eb, method="ebal")$weights
 
-g12w23_eb <- na.omit(g12w23)
-g12w23_eb$weights <- weightit(covs, data = g12w23_eb, method="ebal")$weights
+g12w12_eb <- g12w12
+g12w23_eb <- g12w23
+g12w13_eb <- g12w13
 
-g12w13_eb <- na.omit(g12w13)
-g12w13_eb$weights <- weightit(covs, data = g12w13_eb, method="ebal")$weights
+g12w12_eb_ <- weightit(covs, data = g12w12_eb, method="ebal")
+g12w23_eb_ <- weightit(covs, data = g12w23_eb, method="ebal")
+g12w13_eb_ <- weightit(covs, data = g12w13_eb, method="ebal")
+
+g12w12_eb$weights <- g12w12_eb_$weights
+g12w23_eb$weights <- g12w23_eb_$weights
+g12w13_eb$weights <- g12w13_eb_$weights
 
 # Model estimation
 
 datasets <- c('g12w12', 'g12w23', 'g12w13',
+              'g12w12_na', 'g12w23_na', 'g12w13_na',
               'g12w12_eb', 'g12w23_eb', 'g12w13_eb',
               'g12w12_cem', 'g12w23_cem', 'g12w13_cem'
               ) # Main results: Losing, gaining, and net effect
@@ -121,6 +140,9 @@ for (dataset in datasets) {
 models_df <- bind_rows(mutate(model_df_g12w12, matching="base", effect = 'Losing eligiblity'),
                        mutate(model_df_g12w23, matching="base", effect = 'Regaining eligibility'),
                        mutate(model_df_g12w13, matching="base", effect = 'Net effect of temporary\n disenfranchisement'),
+                       mutate(model_df_g12w12_na, matching="base (no NA)", effect = 'Losing eligiblity'),
+                       mutate(model_df_g12w23_na, matching="base (no NA)", effect = 'Regaining eligibility'),
+                       mutate(model_df_g12w13_na, matching="base (no NA)", effect = 'Net effect of temporary\n disenfranchisement'),
                        mutate(model_df_g12w12_cem, matching="cem", effect = 'Losing eligiblity'),
                        mutate(model_df_g12w23_cem, matching="cem", effect = 'Regaining eligibility'),
                        mutate(model_df_g12w13_cem, matching="cem", effect = 'Net effect of temporary\n disenfranchisement'),
@@ -189,4 +211,6 @@ new_coef <- models_df %>%
 # Print the plot
 print(new_coef)
 
-
+bal.tab(g12w12_cem_)
+bal.tab(g12w23_cem_)
+bal.tab(g12w13_cem_)
