@@ -30,7 +30,6 @@ remain_untreated <- at$remain[at$treatment == 0]
 t_test_result1 <- t.test(remain_treated, remain_untreated)
 t_test_result1
 
-
 ## gender differences between dropouts and second wavers
 gender_remain <- at$female[at$remain == 1]
 gender_dropout <- at$female[at$remain == 0]
@@ -51,7 +50,6 @@ region_dropout <- at$kreisfrei[at$remain == 0]
 
 t_test_result4 <- t.test(region_remain, region_dropout)
 t_test_result4
-
 
 ## DiD split by high and low education
 lose$time <- lose$wave -1
