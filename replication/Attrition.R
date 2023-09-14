@@ -1,7 +1,21 @@
-## Run this script after the "Entropy Balancing" script ##
+# load packages
+library(lmtest)
+library(ggpubr)
+library(tidyverse)
+library(sandwich)
 
+# load cleaned data
+load("df.RData")
 
+# create subdata
+lose <- df %>% 
+  filter(wave2 == "TRUE" & wave != 3 & group != 3)
 
+regain <- df %>% 
+  filter(wave3 == "TRUE" & wave != 1 & group != 3)
+
+net <- df %>% 
+  filter(wave3 == "TRUE" & wave != 2 & group != 3)
 
 ## differential attrition between treated and untreated
 at <- df %>% 
