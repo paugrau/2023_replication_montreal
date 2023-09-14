@@ -5,7 +5,7 @@ library(tidyverse)
 library(sandwich)
 
 # load cleaned data
-load("df.RData")
+load("replication/df.RData")
 
 # create subdata
 lose <- df %>% 
