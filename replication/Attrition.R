@@ -54,6 +54,8 @@ t_test_result4
 
 
 ## DiD split by high and low education
+lose$time <- lose$wave -1
+
 highed <- lose %>% 
   filter(education >2)
 lowed <- lose %>% 
