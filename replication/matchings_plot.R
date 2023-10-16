@@ -176,7 +176,7 @@ new_coef <- models_df %>%
   xlab("Coefficient Estimate") +
   ylab("") +
   scale_x_continuous(breaks = c(-0.2, 0, 0.2), labels = c('\u00AD0.2', '0.0', '0.2')) +
-  scale_color_discrete(labels = c("Base", "Base (without NA)", "CEM", "EB"))+
+  scale_color_discrete(labels = c("Unmatched", "Unmatched (no NA)", "CEM", "EB"))+
   guides(fill="none")+
   theme(
     legend.position = 'top',
