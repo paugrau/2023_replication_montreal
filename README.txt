@@ -36,6 +36,6 @@ The replication folder includes 2 coding files and 1 data file.
 2. df.RData is a copy of the original dataset following all preparatory data wrangling.
 
 
-The repository further includes several compiled files providing an overview of the code and output and PDF and HTML format that can be produced using the main.Rmd script. Also, the folders figures and tables include presented results that are automatically re-produced with the main.Rmd. The codebook PDF includes information on the relevant variables and their respective scales.
+The folders figures and tables include presented results that are automatically re-produced with the main.Rmd. The codebook PDF includes information on the relevant variables and their respective scales.
 
 DEMO CHANGE
