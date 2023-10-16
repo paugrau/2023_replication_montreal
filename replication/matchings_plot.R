@@ -1,5 +1,5 @@
 library(tidyverse)
-#library(ggplot2)
+library(ggplot2)
 library(ggdist)
 library(haven)
 library(WeightIt)
@@ -116,6 +116,8 @@ for (dataset in datasets) {
       
       tmp <- tidy(model, conf.int = T, conf.level = .9) %>%
         filter(term == 'treatment:posttreatmentTRUE') %>%
+        rename(ci90l = conf.low,
+               ci90h = conf.high)%>%
         mutate(coefficient = term,
                dv = dv,
                term = factor(dv,
@@ -125,9 +127,10 @@ for (dataset in datasets) {
                model = factor(subgroup,
                               levels = c("all", "v", "nv"),
                               labels = c("All", "Voters", "Non-Voters")),
-               significant = p.value <= .05) %>%
-        rename(ci90l = conf.low,
-               ci90h = conf.high)
+               significant = p.value <= .05,
+               ci95l = estimate - (1.96 * std.error),
+               ci95h = estimate + (1.96 * std.error))
+
       
       model_df <- bind_rows(model_df, tmp)
     }
@@ -159,46 +162,22 @@ models_df <- bind_rows(mutate(model_df_g12w12, matching="base", effect = 'Losing
 # Create coefficient plot with all three models
 sbgrp <- 'all'
 
-new_coef <-
-  models_df %>% filter(subgroup == sbgrp) %>%
-  dwplot(
-    .,
-    vline = geom_vline(
-      xintercept = 0,
-      colour = "grey60",
-      linetype = 2
-    ),
-    dot_args = list(size = 4),
-    line_args = list(size = 1)) +
-  geom_errorbarh(aes(y = term, xmin = ci90l, xmax = ci90h, col=matching),
-                 position = position_dodge(width = 0.2),
-                 height = 0, size = 1.5) +
-  theme_bw(base_size = 16) + xlab("Coefficient Estimate") + ylab("") +
-  #scale_colour_grey(start = .1,
-  #                  end = .1,
-  #                  guide = guide_legend(reverse = TRUE)) +
-  scale_x_continuous(breaks = c(-.2, 0, .2),
-                     labels = c('\u00AD0.2', '0.0', '0.2')) +
-  theme(legend.position = 'none',
-        legend.title = element_blank(),
-        panel.grid.minor= element_blank(),
-        strip.background = element_blank(),
-        strip.text = element_text(face = 'bold')) +
-  facet_wrap(~effect, nrow = 1)
-
 # Filter the data based on 'sbgrp'
 new_coef <- models_df %>%
   filter(subgroup == sbgrp) %>%
-  mutate(term = factor(term, levels = c("Political Interest", "Internal Efficacy", "Satisfaction with Democracy", "External Efficacy")))%>%
-  ggplot(aes(x = estimate, y=term, col=matching, fill=matching)) +
+  mutate(term = factor(term, levels = c("Political Interest", "Internal Efficacy", "Satisfaction with Democracy", "External Efficacy")),
+         matching = factor(matching, levels=c("base", "base (no NA)", "cem", "eb")))%>%
+  ggplot(aes(x = estimate, y = term, col = matching, fill = matching)) +
   geom_vline(xintercept = 0, colour = "grey60", linetype = 2) +
   geom_point(position = position_dodge(width = 0.2)) +
-  geom_errorbarh(position = position_dodge(width = 0.2), aes(y = term, xmin = ci90l, xmax = ci90h, col=matching), height = 0, size = 1) +
+  geom_errorbarh(position = position_dodge(width = 0.2), aes(y = term, xmin = ci90l, xmax = ci90h, col = matching), height = 0, size = 1) +
+  geom_errorbarh(position = position_dodge(width = 0.2), aes(y = term, xmin = ci95l, xmax = ci95h, col = matching), height = 0, size = 0.5) + 
   theme_bw(base_size = 16) +
   xlab("Coefficient Estimate") +
   ylab("") +
-  #scale_colour_grey(start = 0.1, end = 0.1, guide = guide_legend(reverse = TRUE)) +
   scale_x_continuous(breaks = c(-0.2, 0, 0.2), labels = c('\u00AD0.2', '0.0', '0.2')) +
+  scale_color_discrete(labels = c("Base", "Base (without NA)", "CEM", "EB"))+
+  guides(fill="none")+
   theme(
     legend.position = 'top',
     legend.title = element_blank(),
@@ -208,8 +187,11 @@ new_coef <- models_df %>%
   ) +
   facet_wrap(~effect, nrow = 1)
 
+
 # Print the plot
 print(new_coef)
+
+ggsave(filename = "did_matching.png", plot = new_coef, width = 30, height = 18, dpi = 300, units = "cm")
 
 bal.tab(g12w12_cem_)
 bal.tab(g12w23_cem_)
