@@ -24,7 +24,7 @@ For the main analysis of the article, 2 files are provided:
 
 2. df.RData: Prepared dataset used in all further analyses. Additional information on the variables included can be found in the codebook.
 
-For an additional visualization of the sampling strategy, an additional 1 files (1 excel file) is provided. 
+For an additional visualization of the sampling strategy, an additional CSV file is provided: 
 
 3. gruppen.csv: Overview of birthdate cut-offs for group membership.
 
